@@ -1,84 +1,67 @@
-class Library():
-    def __init__(self, name, booklist):
-        self.name = name
-        self.booklist = booklist
-        self.lendDict = {}
-
-
-    def display_book(self):
-        print(f"Welcome to {self.name} library")
-        for book in self.booklist:
-            print(book)
-
-
-    def add_book(self, book):
-        if book not in self.booklist:
-            self.booklist.append(book)
-            print("Book has been added")
-            database1 = input("enter data file with extension")
-            database2 = open(database1, 'a')
-            database2.write('\n')
-            database2.write(book)
-            print("database has been updated")
+def add_product():
+    enter_detail = True
+    while enter_detail:
+        detail = input("enter A to continue and Q to quit: ")
+        if detail == 'A':
+            product = input("enter product: ")
+            quantity = int(input("enter quantity: "))
+            buying_data.update({product: quantity})
+        elif detail == 'Q':
+            enter_detail = False
         else:
-            print(f"book is already there in {self.name} library")
+            print("enter correct information")
+    return buying_data
 
-    def lend_book(self, book, user):
-        if book in self.booklist:
-            if book not in self.lendDict.keys():
-                self.lendDict.update({book: user})
-                print(f"{book} book has been lend and updated to database")
-            else:
-                print(f"{book} book has been borrowed by some other user")
-        else:
-            print(f"{book} book not available in {self.name} library")
+def get_price(product, quantity):
+    price_data = {'Biscuit': 3, 'Chicken': 5, 'Egg': 1, 'Fish': 3, 'Coke': 2, 'Bread': 2, 'Apple': 3, 'Onion': 3}
+    if product in price_data.keys():
+        subtotal = price_data[product]*quantity
+        print(f"price of "+product+" is "+"$ "+str(price_data[product])+" * "+str(quantity)+" = "+str(subtotal))
+    else:
+        print("this product is not available in store")
+    return subtotal
 
-    def return_book(self, book):
-        if book in self.lendDict.keys():
-            self.lendDict.pop(book)
-            print(f"{book} book has been returned and database has been updated")
-        else:
-            print(f"{book} book has not been borrowed")
-def main():
-    bookList = []
-    Name = input("enter library name:")
-    datafile = input("enter file name with extension")
-    database = open(datafile, 'r')
-    for book in database:
-        bookList.append(book)
-    accept = True
-    library = Library(Name, bookList)
-    while accept:
-        option = input("select C to continue or Q to quit:")
-        if option == 'C':
-            print("menu details to continue:")
-            menu = '''
-                      1 = display books
-                      2 = add books
-                      3 = lend books
-                      4 = return books
-                    '''
-            print(menu)
-            choice = int(input("choose option "))
-            if choice == 1:
-                library.display_book()
-            elif choice == 2:
-                book = input("enter book name:")
-                library.add_book(book)
-            elif choice == 3:
-                book = input("enter book name:")
-                library.lend_book(book)
-            elif choice == 4:
-                book = input("enter book name:")
-                library.return_book(book)
-            else:
-                print("enter correct choice")
-        elif option == 'Q':
-            accept = False
-        else:
-            print("enter correct option")
+def get_discount(billamount, membership):
+    discount = 0
+    if billamount > 25:
+        if membership == 'Gold':
+            billamount = 0.80*float(billamount)
+            discount = 20
+        elif membership == 'Silver':
+            billamount = 0.90*float(billamount)
+            discount = 10
+        elif membership == 'Bronze':
+            billamount = 0.95*float(billamount)
+            discount = 5
+        print(f"{discount} % for {membership} membership and bill is {str(billamount)}")
+    else:
+        print("there is no discount for bill amount less than $25")
+    return billamount
 
-if __name__ == '__main__':
-    main()
+
+def get_bill(buying_data, membership):
+    billamount = 0
+    for key, value in buying_data.items():
+        billamount += get_price(key, value)
+    billamount = get_discount(billamount, membership)
+    print("Thank you visit again")
+
+shop = input("Welcome to shop, press E to enter:")
+if shop == 'E':
+    membership = input("enter membership: ")
+    buying_data = {}
+    add_product()
+    get_bill(buying_data, membership)
+else:
+    print("Thank you visit again")
+
+
+
+
+
+
+
+
+
 
 
