@@ -1,64 +1,121 @@
-def add_product():
-    enter_detail = True
-    while enter_detail:
-        detail = input("enter A to continue and Q to quit: ")
-        if detail == 'A':
-            product = input("enter product: ")
-            quantity = int(input("enter quantity: "))
-            buying_data.update({product: quantity})
-        elif detail == 'Q':
-            enter_detail = False
-        else:
-            print("enter correct information")
-    return buying_data
+import mysql.connector
+from tkinter import*
+from tkinter import messagebox
 
-def get_price(product, quantity):
-    price_data = {'Biscuit': 3, 'Chicken': 5, 'Egg': 1, 'Fish': 3, 'Coke': 2, 'Bread': 2, 'Apple': 3, 'Onion': 3}
-    if product in price_data.keys():
-        subtotal = price_data[product]*quantity
-        print(f"price of "+product+" is "+"$ "+str(price_data[product])+" * "+str(quantity)+" = "+str(subtotal))
+window = Tk()
+window.geometry('600x270')
+window.title('Employee Crud App')
+empID = Label(window, text='Emp ID', font=('serif', 12))
+empID.place(x=20, y=30)
+empName = Label(window, text='Emp Name', font=('serif', 12))
+empName.place(x=20, y=60)
+empDept = Label(window, text='Emp Name', font=('serif', 12))
+empDept.place(x=20, y=90)
+enterID = Entry(window)
+enterID.place(x=170, y=30)
+enterName = Entry(window)
+enterName.place(x=170, y=60)
+enterDept = Entry(window)
+enterDept.place(x=170, y=90)
+showData = Listbox(window)
+showData.place(x=330, y=30)
+
+
+def ShowData():
+    myDB = mysql.connector.connect(host='localhost', user='root', passwd='Sib_Sql@x64!', database='Employee')
+    myCur =myDB.cursor()
+    myCur.execute("select * from EmpDetail")
+    rows = myCur.fetchall()
+    showData.delete(0, showData.size())
+    for row in rows:
+        add_value = str(row[0])+''+row[1]+''+row[2]
+        showData.insert(showData.size()+1, add_value)
+    myDB.close()
+
+
+def ResetFields():
+    enterID.delete(0, "end")
+    enterName.delete(0, "end")
+    enterDept.delete(0, "end")
+
+
+def InsertData():
+    id = enterID.get()
+    name = enterName.get()
+    dept = enterDept.get()
+    if id == "" or name == "" or dept == "":
+        messagebox.showwarning("cannot insert", "all fields are required!")
     else:
-        print("this product is not available in store")
-    return subtotal
+        myDB = mysql.connector.connect(host='localhost', user='root', passwd='Sib_Sql@x64!', database='Employee')
+        myCur = myDB.cursor()
+        myCur.execute("insert into EmpDetail values("+id+", "+name+", "+dept+")")
+        myDB.commit()
+        ShowData()
+        enterID.delete(0, "end")
+        enterName.delete(0, "end")
+        enterDept.delete(0, "end")
+        messagebox.showinfo("insert status", "data inserted successfully")
+        myDB.close()
 
-def get_discount(billamount, membership):
-    discount = 0
-    if billamount > 25:
-        if membership == 'Gold':
-            billamount = 0.80*float(billamount)
-            discount = 20
-        elif membership == 'Silver':
-            billamount = 0.90*float(billamount)
-            discount = 10
-        elif membership == 'Bronze':
-            billamount = 0.95*float(billamount)
-            discount = 5
-        print(f"{discount} % for {membership} membership and bill is {str(billamount)}")
+
+def UpdateData():
+    id = enterID.get()
+    name = enterName.get()
+    dept = enterDept.get()
+    if id == "" or name == "" or dept == "":
+        messagebox.showwarning("cannot insert", "required all fields!")
     else:
-        print("there is no discount for bill amount less than $25")
-    return billamount
+        myDB = mysql.connector.connect(host='localhost', user='root', passwd='Sib_Sql@x64!', database='Employee')
+        myCur = myDB.cursor()
+        myCur.execute("update EmpDetail set empname = "+name+", empdept = "+dept+" where empID = "+id+"")
+        myDB.commit()
+        ShowData()
+        enterID.delete(0, "end")
+        enterName.delete(0, "end")
+        enterDept.delete(0, "end")
+        messagebox.showinfo("update status", "data updated successfully")
+        myDB.close()
 
 
-def get_bill(buying_data, membership):
-    billamount = 0
-    for key, value in buying_data.items():
-        billamount += get_price(key, value)
-    billamount = get_discount(billamount, membership)
-    print("Thank you visit again")
-
-shop = input("Welcome to shop, press E to enter:")
-if shop == 'E':
-    membership = input("enter membership: ")
-    buying_data = {}
-    add_product()
-    get_bill(buying_data, membership)
-else:
-    print("Thank you visit again")
+def GetData():
+    if enterID.get() == "":
+        messagebox.showwarning("fetch status", "insert empID!")
+    else:
+        myDB = mysql.connector.connect(host='localhost', user='root', passwd='Sib_Sql@x64!', database='Employee')
+        myCur = myDB.cursor()
+        myCur.execute("select * from EmpDetail where empID = "+enterID.get()+"")
+        rows = myCur.fetchall()
+        for row in rows:
+            enterName.insert(0, row[1])
+            enterDept.insert(0, row[2])
+        myDB.close()
 
 
+def DeleteData():
+    if enterID.get() == "":
+        messagebox.showwarning("delete status", "insert empID!")
+    else:
+        myDB = mysql.connector.connect(host='localhost', user='root', passwd='Sib_Sql@x64!', database='Employee')
+        myCur = myDB.cursor()
+        myCur.execute("delete from EmpDetail where empID = "+enterID.get()+"")
+        myDB.commit()
+        ShowData()
+        enterID.delete(0, "end")
+        enterName.delete(0, "end")
+        enterDept.delete(0, "end")
+        myDB.close()
 
 
-
+insertBtn = Button(window, text='Insert', font=('Sans', 16), bg='white', command=InsertData)
+insertBtn.place(x=20, y=160)
+updateBtn = Button(window, text='Update', font=('Sans', 16), bg='white', command=UpdateData)
+updateBtn.place(x=97, y=160)
+deleteBtn = Button(window, text='Delete', font=('Sans', 16), bg='white', command=DeleteData)
+deleteBtn.place(x=190, y=160)
+resetBtn = Button(window, text='Reset', font=('Sans', 16), bg='white', command=ResetFields)
+resetBtn.place(x=20, y=210)
+ShowData()
+window.mainloop()
 
 
 
